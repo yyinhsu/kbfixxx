@@ -1,0 +1,23 @@
+{
+    "global": {
+        "ignore_external_keyboard": false,
+        "ignore_internal_keyboard": false
+    },
+    "keys": {
+        "b": {
+            "delay_ms": 60,
+            "max_bounce_count": 1,
+            "enabled": true
+        },
+        "space": {
+            "delay_ms": 80,
+            "max_bounce_count": 2,
+            "enabled": true
+        },
+        "t": {
+            "delay_ms": 40,
+            "max_bounce_count": 1,
+            "enabled": true
+        }
+    }
+}

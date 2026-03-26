@@ -1,0 +1,8 @@
+# Build artifacts
+*.o
+*.app/
+kbfixxx
+test_runner
+
+# macOS
+.DS_Store
