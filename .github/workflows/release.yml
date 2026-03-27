@@ -22,8 +22,7 @@ jobs:
         run: make test
 
       - name: Zip app bundle
-        run: |
-          cd kbfixxx.app && zip -r ../kbfixxx.app.zip . && cd ..
+        run: zip -r kbfixxx.app.zip kbfixxx.app
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
