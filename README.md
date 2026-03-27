@@ -31,7 +31,7 @@ Built as an enhanced alternative to [Unshaky](https://github.com/aahung/Unshaky)
 
 ## Requirements
 
-- macOS 12.0 (Monterey) or later
+- macOS 10.13 (High Sierra) or later
 - Xcode Command Line Tools (`xcode-select --install`)
 - **Accessibility permission** (System Settings → Privacy & Security → Accessibility)
 

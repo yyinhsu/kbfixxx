@@ -6,8 +6,9 @@ CC = clang
 OBJC = clang
 
 ARCH_FLAGS ?=
-CFLAGS = -Wall -Wextra -O2 -std=c11 $(ARCH_FLAGS)
-OBJCFLAGS = -Wall -Wextra -O2 -fobjc-arc $(ARCH_FLAGS)
+MACOSX_DEPLOYMENT_TARGET ?= 10.13
+CFLAGS = -Wall -Wextra -O2 -std=c11 $(ARCH_FLAGS) -mmacosx-version-min=$(MACOSX_DEPLOYMENT_TARGET)
+OBJCFLAGS = -Wall -Wextra -O2 -fobjc-arc $(ARCH_FLAGS) -mmacosx-version-min=$(MACOSX_DEPLOYMENT_TARGET)
 FRAMEWORKS = -framework Cocoa -framework Carbon -framework ApplicationServices -framework ServiceManagement
 
 SRC_CORE = src/core/config.c src/core/debouncer.c src/core/stats.c src/core/detector.c

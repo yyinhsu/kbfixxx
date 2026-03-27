@@ -70,7 +70,11 @@
 
     _textView = [[NSTextView alloc] initWithFrame:scrollView.bounds];
     _textView.editable = NO;
-    _textView.font = [NSFont monospacedSystemFontOfSize:11 weight:NSFontWeightRegular];
+    if (@available(macOS 10.15, *)) {
+        _textView.font = [NSFont monospacedSystemFontOfSize:11 weight:NSFontWeightRegular];
+    } else {
+        _textView.font = [NSFont fontWithName:@"Menlo" size:11];
+    }
     _textView.backgroundColor = [NSColor colorWithWhite:0.05 alpha:1.0];
     _textView.textColor = [NSColor colorWithWhite:0.9 alpha:1.0];
     _textView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;

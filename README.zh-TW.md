@@ -31,7 +31,7 @@
 
 ## 系統需求
 
-- macOS 12.0 (Monterey) 或更新版本
+- macOS 10.13 (High Sierra) 或更新版本
 - Xcode 命令列工具 (`xcode-select --install`)
 - **輔助使用權限**（系統設定 → 隱私與安全性 → 輔助使用）
 
