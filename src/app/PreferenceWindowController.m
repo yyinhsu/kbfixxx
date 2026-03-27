@@ -176,14 +176,29 @@
         return check;
     }
 
+    if ([identifier isEqualToString:@"key"]) {
+        NSPopUpButton *popup = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
+        popup.bordered = NO;
+        popup.font = [NSFont systemFontOfSize:[NSFont systemFontSize]];
+        for (int i = 0; i < N_VIRTUAL_KEY; i++) {
+            if (keycode_names[i]) {
+                NSString *title = [NSString stringWithUTF8String:keycode_names[i]];
+                [popup addItemWithTitle:title];
+                popup.lastItem.tag = i;
+            }
+        }
+        [popup selectItemWithTitle:item.keyName];
+        popup.tag = row;
+        popup.target = self;
+        popup.action = @selector(keyPopupChanged:);
+        return popup;
+    }
+
     NSTextField *cell = [NSTextField textFieldWithString:@""];
     cell.bordered = NO;
     cell.drawsBackground = NO;
 
-    if ([identifier isEqualToString:@"key"]) {
-        cell.stringValue = item.keyName;
-        cell.editable = NO;
-    } else if ([identifier isEqualToString:@"delay"]) {
+    if ([identifier isEqualToString:@"delay"]) {
         cell.stringValue = [NSString stringWithFormat:@"%d", item.delayMs];
         cell.editable = YES;
         cell.tag = row;
@@ -197,7 +212,10 @@
         cell.identifier = @"bounce_field";
     } else if ([identifier isEqualToString:@"code"]) {
         cell.stringValue = [NSString stringWithFormat:@"0x%02X", item.keycode];
-        cell.editable = NO;
+        cell.editable = YES;
+        cell.tag = row;
+        cell.delegate = (id<NSTextFieldDelegate>)self;
+        cell.identifier = @"code_field";
         cell.textColor = NSColor.secondaryLabelColor;
     }
 
@@ -220,6 +238,18 @@
         if (value < 1) value = 1;
         if (value > 10) value = 10;
         item.maxBounceCount = value;
+    } else if ([field.identifier isEqualToString:@"code_field"]) {
+        /* Parse hex value (with or without 0x prefix) */
+        unsigned int hexVal = 0;
+        NSString *text = [field.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+        NSScanner *scanner = [NSScanner scannerWithString:text];
+        [scanner scanHexInt:&hexVal];
+        int keycode = (int)hexVal;
+        if (keycode < 0) keycode = 0;
+        if (keycode >= N_VIRTUAL_KEY) keycode = N_VIRTUAL_KEY - 1;
+        item.keycode = keycode;
+        item.keyName = [NSString stringWithUTF8String:keycode_to_name(keycode)];
+        [_tableView reloadData];
     }
 }
 
@@ -227,6 +257,17 @@
     NSInteger row = sender.tag;
     if (row < 0 || row >= (NSInteger)_rows.count) return;
     _rows[(NSUInteger)row].enabled = (sender.state == NSControlStateValueOn);
+}
+
+- (void)keyPopupChanged:(NSPopUpButton *)sender {
+    NSInteger row = sender.tag;
+    if (row < 0 || row >= (NSInteger)_rows.count) return;
+    KeyConfigRow *item = _rows[(NSUInteger)row];
+    item.keycode = (int)sender.selectedItem.tag;
+    item.keyName = sender.selectedItem.title;
+    /* Refresh to update the Key Code column */
+    [_tableView reloadDataForRowIndexes:[NSIndexSet indexSetWithIndex:(NSUInteger)row]
+                          columnIndexes:[NSIndexSet indexSetWithIndex:4]];
 }
 
 #pragma mark - Actions
@@ -344,6 +385,15 @@
     [_appDelegate rebuildMenu];
 
     NSLog(@"kbfixxx: config saved and applied");
+
+    /* Show confirmation to the user */
+    NSAlert *alert = [[NSAlert alloc] init];
+    alert.messageText = @"Config Saved";
+    alert.informativeText = [NSString stringWithFormat:@"Configuration saved and applied (%lu key(s) configured).",
+                             (unsigned long)_rows.count];
+    alert.alertStyle = NSAlertStyleInformational;
+    [alert addButtonWithTitle:@"OK"];
+    [alert beginSheetModalForWindow:self.window completionHandler:nil];
 }
 
 - (void)toggleIgnoreExternal:(NSButton *)sender {

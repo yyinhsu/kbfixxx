@@ -18,6 +18,17 @@ Built as an enhanced alternative to [Unshaky](https://github.com/aahung/Unshaky)
 - **JSON config** — Human-editable config at `~/.config/kbfixxx/config.json`, hot-reloaded on save
 - **Menu bar app** — Lives in the menu bar, no Dock icon
 
+## Installation
+
+### Download (recommended)
+
+1. Go to the [Releases](../../releases/latest) page
+2. Download `kbfixxx.app.zip`
+3. Unzip and move `kbfixxx.app` to `/Applications`
+4. Launch and grant Accessibility permission when prompted
+
+### Build from source
+
 ## Requirements
 
 - macOS 12.0 (Monterey) or later

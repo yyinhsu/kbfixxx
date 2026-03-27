@@ -18,6 +18,17 @@
 - **JSON 設定檔** — 可直接編輯的設定檔 `~/.config/kbfixxx/config.json`，儲存後自動重新載入
 - **選單列常駐** — 僅顯示於選單列，不佔用 Dock 空間
 
+## 安裝方式
+
+### 下載安裝（推薦）
+
+1. 前往 [Releases](../../releases/latest) 頁面
+2. 下載 `kbfixxx.app.zip`
+3. 解壓縮後將 `kbfixxx.app` 移至 `/Applications`
+4. 啟動後依提示授予「輔助使用」權限
+
+### 從原始碼編譯
+
 ## 系統需求
 
 - macOS 12.0 (Monterey) 或更新版本
