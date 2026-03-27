@@ -15,8 +15,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build
-        run: make
+      - name: Build universal binary
+        run: make ARCH_FLAGS="-arch x86_64 -arch arm64"
 
       - name: Run tests
         run: make test

@@ -5,8 +5,9 @@ BUNDLE_ID = com.kbfixxx.app
 CC = clang
 OBJC = clang
 
-CFLAGS = -Wall -Wextra -O2 -std=c11
-OBJCFLAGS = -Wall -Wextra -O2 -fobjc-arc
+ARCH_FLAGS ?=
+CFLAGS = -Wall -Wextra -O2 -std=c11 $(ARCH_FLAGS)
+OBJCFLAGS = -Wall -Wextra -O2 -fobjc-arc $(ARCH_FLAGS)
 FRAMEWORKS = -framework Cocoa -framework Carbon -framework ApplicationServices -framework ServiceManagement
 
 SRC_CORE = src/core/config.c src/core/debouncer.c src/core/stats.c src/core/detector.c
