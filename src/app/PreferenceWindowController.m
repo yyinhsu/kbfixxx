@@ -52,7 +52,7 @@
     NSView *content = self.window.contentView;
 
     /* Scroll view + table */
-    NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:NSMakeRect(0, 50, 600, 450)];
+    NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:NSMakeRect(0, 80, 600, 420)];
     scrollView.hasVerticalScroller = YES;
     scrollView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
 
@@ -97,27 +97,27 @@
     [content addSubview:scrollView];
 
     /* Bottom toolbar */
-    NSView *toolbar = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 600, 50)];
+    NSView *toolbar = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 600, 80)];
     toolbar.autoresizingMask = NSViewWidthSizable;
 
     /* Add Key button */
     NSButton *addBtn = [NSButton buttonWithTitle:@"Add Key" target:self action:@selector(addKey:)];
-    addBtn.frame = NSMakeRect(10, 10, 80, 30);
+    addBtn.frame = NSMakeRect(10, 42, 80, 30);
     [toolbar addSubview:addBtn];
 
     /* Detect Key button */
     _detectKeyButton = [NSButton buttonWithTitle:@"Detect Key…" target:self action:@selector(detectKey:)];
-    _detectKeyButton.frame = NSMakeRect(100, 10, 110, 30);
+    _detectKeyButton.frame = NSMakeRect(100, 42, 110, 30);
     [toolbar addSubview:_detectKeyButton];
 
     /* Remove Key button */
     NSButton *removeBtn = [NSButton buttonWithTitle:@"Remove" target:self action:@selector(removeKey:)];
-    removeBtn.frame = NSMakeRect(220, 10, 80, 30);
+    removeBtn.frame = NSMakeRect(220, 42, 80, 30);
     [toolbar addSubview:removeBtn];
 
     /* Save button */
     NSButton *saveBtn = [NSButton buttonWithTitle:@"Save & Apply" target:self action:@selector(saveConfig:)];
-    saveBtn.frame = NSMakeRect(430, 10, 110, 30);
+    saveBtn.frame = NSMakeRect(480, 8, 110, 30);
     saveBtn.bezelStyle = NSBezelStyleRounded;
     saveBtn.keyEquivalent = @"\r";
     [toolbar addSubview:saveBtn];
@@ -126,7 +126,7 @@
     NSButton *ignExtCheck = [NSButton checkboxWithTitle:@"Ignore External KB"
                                                 target:self
                                                 action:@selector(toggleIgnoreExternal:)];
-    ignExtCheck.frame = NSMakeRect(320, 10, 160, 30);
+    ignExtCheck.frame = NSMakeRect(320, 42, 160, 30);
     ignExtCheck.state = [_appDelegate configPtr]->ignore_external_keyboard ? NSControlStateValueOn : NSControlStateValueOff;
     ignExtCheck.tag = 100;
     [toolbar addSubview:ignExtCheck];

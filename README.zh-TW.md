@@ -25,9 +25,28 @@
 1. 前往 [Releases](../../releases/latest) 頁面
 2. 下載 `kbfixxx.app.zip`
 3. 解壓縮後將 `kbfixxx.app` 移至 `/Applications`
-4. 啟動後依提示授予「輔助使用」權限
+4. **首次啟動**：對 App 按右鍵 → **打開** → 再次點擊 **打開**（macOS 預設會阻擋未簽署的 App）。或在終端機執行：`xattr -cr /Applications/kbfixxx.app`
+   > ⚠️ 請在信任本專案的前提下執行此操作。本專案完全開源，你可以自行檢視原始碼或[從原始碼編譯](#從原始碼編譯)。
+5. 依提示授予「輔助使用」權限
 
 ### 從原始碼編譯
+
+```sh
+# 安裝 Xcode 命令列工具（若尚未安裝）
+xcode-select --install
+
+# 複製專案
+git clone https://github.com/user/kbfixxx.git
+cd kbfixxx
+
+# 編譯 App Bundle
+make
+
+# （選用）安裝預設設定並啟動
+make run
+```
+
+編譯完成後，將 `kbfixxx.app` 移至 `/Applications`，首次啟動時依提示授予「輔助使用」權限即可。
 
 ## 系統需求
 

@@ -25,9 +25,28 @@ Built as an enhanced alternative to [Unshaky](https://github.com/aahung/Unshaky)
 1. Go to the [Releases](../../releases/latest) page
 2. Download `kbfixxx.app.zip`
 3. Unzip and move `kbfixxx.app` to `/Applications`
-4. Launch and grant Accessibility permission when prompted
+4. **First launch**: right-click the app → **Open** → click **Open** again (macOS blocks unsigned apps by default). Alternatively, run: `xattr -cr /Applications/kbfixxx.app`
+   > ⚠️ Only do this if you trust this project. The app is open-source — you can review the code or [build from source](#build-from-source) yourself.
+5. Grant Accessibility permission when prompted
 
 ### Build from source
+
+```sh
+# Install Xcode Command Line Tools (if not already installed)
+xcode-select --install
+
+# Clone the repo
+git clone https://github.com/user/kbfixxx.git
+cd kbfixxx
+
+# Build the .app bundle
+make
+
+# (Optional) Install default config and launch
+make run
+```
+
+Then move `kbfixxx.app` to `/Applications` and grant Accessibility permission when prompted.
 
 ## Requirements
 
