@@ -3,11 +3,6 @@
 #include <string.h>
 #include <math.h>
 
-/* Minimum threshold (ms) to ignore auto-repeat events from the OS.
- * Events under this threshold between keyDown->keyDown (without keyUp in between)
- * are auto-repeat, not bounce. */
-#define AUTO_REPEAT_IGNORE_THRESHOLD 5.0
-
 /* Internal keyboard type IDs (butterfly keyboards) */
 #define KEYBOARD_TYPE_INTERNAL_PRE2018 58
 #define KEYBOARD_TYPE_INTERNAL_2018    59
@@ -94,11 +89,11 @@ CGEventRef debouncer_filter_event(Debouncer *db, CGEventRef event) {
         if (last_ts > 0.0 && ks->last_event_type == kCGEventKeyUp) {
             double elapsed_ms = (now - last_ts) * 1000.0;
 
-            /* Skip if this looks like an OS auto-repeat (keyDown without preceding keyUp) */
-            if (elapsed_ms <= AUTO_REPEAT_IGNORE_THRESHOLD) {
-                /* Too fast — likely auto-repeat artifact, let it through */
-                goto accept;
-            }
+            /* NOTE: No auto-repeat guard needed here. Auto-repeat generates
+             * consecutive keyDown events WITHOUT keyUp in between, so the
+             * last_event_type == kCGEventKeyUp check above already excludes
+             * auto-repeat. Ultra-fast keyUp→keyDown pairs (< 5ms) are
+             * actually the signature of butterfly keyboard bounce. */
 
             if (elapsed_ms < (double)kc->delay_ms) {
                 /* Bounce detected */
@@ -129,7 +124,6 @@ CGEventRef debouncer_filter_event(Debouncer *db, CGEventRef event) {
         }
     }
 
-accept:
     /* Record timestamp for this event */
     if (event_type == kCGEventKeyDown || event_type == kCGEventKeyUp) {
         ks->timestamp_index = (ks->timestamp_index + 1) % 4;
