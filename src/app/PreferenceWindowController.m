@@ -243,12 +243,14 @@
 
     if ([field.identifier isEqualToString:@"delay_field"]) {
         if (value < 0) value = 0;
-        if (value > 2000) value = 2000;
+        if (value > 10000) value = 10000;
         item.delayMs = value;
+        field.intValue = value;
     } else if ([field.identifier isEqualToString:@"bounce_field"]) {
         if (value < 1) value = 1;
         if (value > 10) value = 10;
         item.maxBounceCount = value;
+        field.intValue = value;
     } else if ([field.identifier isEqualToString:@"code_field"]) {
         /* Parse hex value (with or without 0x prefix) */
         unsigned int hexVal = 0;

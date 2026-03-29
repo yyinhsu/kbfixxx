@@ -108,7 +108,7 @@ int config_load(Config *cfg, const char *path) {
             if (cJSON_IsNumber(delay)) {
                 int val = delay->valueint;
                 if (val < 0) val = 0;
-                if (val > 2000) val = 2000;
+                if (val > 10000) val = 10000;
                 cfg->keys[keycode].delay_ms = val;
             }
 
