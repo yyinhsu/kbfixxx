@@ -37,6 +37,8 @@
     window.minSize = NSMakeSize(500, 300);
     [window center];
 
+    window.releasedWhenClosed = NO;
+
     self = [super initWithWindow:window];
     if (self) {
         _appDelegate = appDelegate;
@@ -153,6 +155,15 @@
 
 - (void)refreshTable {
     [self loadRows];
+
+    /* Update the ignore-external checkbox from the current config */
+    NSView *toolbar = self.window.contentView.subviews.lastObject;
+    for (NSView *v in toolbar.subviews) {
+        if (v.tag == 100 && [v isKindOfClass:[NSButton class]]) {
+            ((NSButton *)v).state = [_appDelegate configPtr]->ignore_external_keyboard
+                ? NSControlStateValueOn : NSControlStateValueOff;
+        }
+    }
 }
 
 #pragma mark - NSTableViewDataSource
@@ -352,6 +363,10 @@
 
 - (void)saveConfig:(id)sender {
     (void)sender;
+
+    /* End any in-progress text editing so the value is committed to the row model */
+    [self.window makeFirstResponder:nil];
+
     Config *cfg = [_appDelegate configPtr];
 
     /* Clear all key configs first */
@@ -380,18 +395,27 @@
     }
 
     /* Save to file */
-    config_save(cfg, config_default_path());
+    int saveResult = config_save(cfg, config_default_path());
     debouncer_reload_config([_appDelegate debouncerPtr]);
     [_appDelegate rebuildMenu];
 
-    NSLog(@"kbfixxx: config saved and applied");
+    /* Reload rows from the saved config so the table matches what was persisted */
+    [self loadRows];
 
     /* Show confirmation to the user */
     NSAlert *alert = [[NSAlert alloc] init];
-    alert.messageText = @"Config Saved";
-    alert.informativeText = [NSString stringWithFormat:@"Configuration saved and applied (%lu key(s) configured).",
-                             (unsigned long)_rows.count];
-    alert.alertStyle = NSAlertStyleInformational;
+    if (saveResult == 0) {
+        NSLog(@"kbfixxx: config saved and applied");
+        alert.messageText = @"Config Saved";
+        alert.informativeText = [NSString stringWithFormat:@"Configuration saved and applied (%lu key(s) configured).",
+                                 (unsigned long)_rows.count];
+        alert.alertStyle = NSAlertStyleInformational;
+    } else {
+        NSLog(@"kbfixxx: failed to save config file");
+        alert.messageText = @"Save Failed";
+        alert.informativeText = @"Could not write configuration file. Check file permissions.";
+        alert.alertStyle = NSAlertStyleWarning;
+    }
     [alert addButtonWithTitle:@"OK"];
     [alert beginSheetModalForWindow:self.window completionHandler:nil];
 }

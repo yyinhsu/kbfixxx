@@ -49,9 +49,6 @@ static char* read_file_contents(const char *path) {
 }
 
 int config_load(Config *cfg, const char *path) {
-    config_init_defaults(cfg);
-    snprintf(cfg->config_path, sizeof(cfg->config_path), "%s", path);
-
     char *json_str = read_file_contents(path);
     if (!json_str) {
         fprintf(stderr, "kbfixxx: cannot read config file: %s\n", path);
@@ -65,6 +62,10 @@ int config_load(Config *cfg, const char *path) {
                 cJSON_GetErrorPtr() ? cJSON_GetErrorPtr() : "unknown");
         return -1;
     }
+
+    /* Only reset config after we know the file is valid */
+    config_init_defaults(cfg);
+    snprintf(cfg->config_path, sizeof(cfg->config_path), "%s", path);
 
     /* Parse global settings */
     cJSON *global = cJSON_GetObjectItem(root, "global");
@@ -148,9 +149,9 @@ int config_save(const Config *cfg, const char *path) {
         if (cfg->keys[i].delay_ms <= 0 && !cfg->keys[i].enabled) continue;
 
         const char *name = keycode_to_name(i);
+        char num_buf[8];
         if (strcmp(name, "unknown") == 0) {
             /* Use numeric key code as string */
-            char num_buf[8];
             snprintf(num_buf, sizeof(num_buf), "%d", i);
             name = num_buf;
         }

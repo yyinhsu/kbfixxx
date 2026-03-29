@@ -197,6 +197,7 @@ static void fsevents_callback(ConstFSEventStreamRef streamRef,
     if (!_preferenceController) {
         _preferenceController = [[PreferenceWindowController alloc] initWithAppDelegate:self];
     }
+    [_preferenceController refreshTable];
     [_preferenceController showWindow:nil];
     [NSApp activateIgnoringOtherApps:YES];
 }
