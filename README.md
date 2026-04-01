@@ -27,7 +27,7 @@ Built as an enhanced alternative to [Unshaky](https://github.com/aahung/Unshaky)
 3. Unzip and move `kbfixxx.app` to `/Applications`
 4. **First launch**: right-click the app → **Open** → click **Open** again (macOS blocks unsigned apps by default). Alternatively, run: `xattr -cr /Applications/kbfixxx.app`
    > ⚠️ Only do this if you trust this project. The app is open-source — you can review the code or [build from source](#build-from-source) yourself.
-5. Grant Accessibility permission when prompted
+5. Grant **Accessibility** and **Input Monitoring** permissions when prompted (see [Troubleshooting: Accessibility Permission](#troubleshooting-accessibility-permission))
 
 ### Build from source
 
@@ -46,13 +46,14 @@ make
 make run
 ```
 
-Then move `kbfixxx.app` to `/Applications` and grant Accessibility permission when prompted.
+Then move `kbfixxx.app` to `/Applications` and grant **Accessibility** and **Input Monitoring** permissions when prompted (see [Troubleshooting: Accessibility Permission](#troubleshooting-accessibility-permission)).
 
 ## Requirements
 
 - macOS 10.13 (High Sierra) or later
 - Xcode Command Line Tools (`xcode-select --install`)
 - **Accessibility permission** (System Settings → Privacy & Security → Accessibility)
+- **Input Monitoring permission** (System Settings → Privacy & Security → Input Monitoring)
 
 ## Build & Run
 
@@ -71,6 +72,31 @@ make clean
 ```
 
 The app will appear in your menu bar with a keyboard icon. On first launch, it will prompt for Accessibility permission — this is required to intercept keyboard events.
+
+## Troubleshooting: Accessibility Permission
+
+kbfixxx uses a `CGEventTap` to intercept keyboard events. macOS requires **both Accessibility and Input Monitoring** permissions for this to work.
+
+### Event Tap inactive / Stats & Event Log empty
+
+If the menu bar shows **"Event Tap: Inactive ⚠️"**, or the Statistics and Event Log windows are empty, the event tap has lost permission. This commonly happens after:
+
+- **Updating the app binary** (downloading a new release or rebuilding from source) — macOS revokes permission when the binary hash changes
+- **macOS updates**
+
+**To fix:**
+
+1. Quit kbfixxx (menu bar → Quit kbfixxx)
+2. Open **System Settings → Privacy & Security → Accessibility**
+3. Find kbfixxx in the list and **remove it** (click the `−` button)
+4. **Re-add** kbfixxx (click the `+` button, navigate to `/Applications/kbfixxx.app`)
+5. Open **System Settings → Privacy & Security → Input Monitoring**
+6. Repeat: **remove** kbfixxx, then **re-add** it
+7. Launch kbfixxx again
+
+> ⚠️ Simply toggling the switch off and on is **not enough** — you must remove and re-add the entry so macOS re-reads the new binary hash.
+
+After re-launching, verify the menu bar shows **"Event Tap: Active"** and the Event Log window displays keyboard events.
 
 ## Configuration
 
@@ -123,19 +149,20 @@ CGEventTap intercepts keyDown/keyUp
 Is this key configured for debounce?
     │ No → pass through
     ▼ Yes
-Was previous event keyUp within delay_ms?
-    │ No → pass through (reset bounce counter)
+Is this a keyDown event?
+    │ No (keyUp) → pass through (record timestamp)
     ▼ Yes
-Increment bounce_counter
-    │
-    ▼
-bounce_counter ≤ max_bounce_count?
-    │ No → pass through (genuine fast typing)
+Is it an auto-repeat? (held down)
+    │ Yes → pass through
+    ▼ No
+Time since last keyUp < delay_ms?
+  OR time since last keyDown < delay_ms?
+    │ No → pass through (legitimate press)
     ▼ Yes
 SUPPRESS event (return NULL)
 ```
 
-The app uses `CGEventTapCreate` at the session level to intercept keyboard events before they reach applications. When a bounce is detected (keyDown following keyUp within the configured delay), the event is suppressed and its matching keyUp is also dismissed.
+The app uses `CGEventTapCreate` at the session level to intercept keyboard events before they reach applications. When a bounce is detected — a non-auto-repeat keyDown occurring within `delay_ms` of the last keyUp or the last keyDown — the event is suppressed. All keyUp events pass through unconditionally to maintain accurate timing.
 
 ## Menu bar
 
