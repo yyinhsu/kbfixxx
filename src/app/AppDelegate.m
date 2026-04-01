@@ -23,6 +23,7 @@ static void fsevents_callback(ConstFSEventStreamRef streamRef,
 @implementation AppDelegate {
     FSEventStreamRef _fsEventStream;
     NSTimer *_eventTapCheckTimer;
+    int _eventTapFailCount;
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
@@ -305,12 +306,25 @@ static void fsevents_callback(ConstFSEventStreamRef streamRef,
 - (void)checkEventTap {
     if (!_isEnabled) return;
     if (!debouncer_event_tap_enabled(&_debouncer)) {
-        NSLog(@"kbfixxx: event tap was disabled, attempting to re-enable");
+        _eventTapFailCount++;
+        NSLog(@"kbfixxx: event tap was disabled, attempting to re-enable (attempt %d)", _eventTapFailCount);
         debouncer_remove_event_tap(&_debouncer);
-        if (!debouncer_setup_event_tap(&_debouncer)) {
+        if (debouncer_setup_event_tap(&_debouncer)) {
+            _eventTapFailCount = 0;
+            NSLog(@"kbfixxx: event tap re-enabled successfully");
+        } else {
             NSLog(@"kbfixxx: failed to re-enable event tap");
+            if (_eventTapFailCount >= 3) {
+                /* After 3 consecutive failures, show the permission alert
+                 * and stop spamming re-enable attempts */
+                [_eventTapCheckTimer invalidate];
+                _eventTapCheckTimer = nil;
+                [self showAccessibilityAlert];
+            }
         }
         [self rebuildMenu];
+    } else {
+        _eventTapFailCount = 0;
     }
 }
 
