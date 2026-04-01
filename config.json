@@ -5,8 +5,8 @@
     },
     "keys": {
         "c": {
-            "delay_ms": 1000,
-            "max_bounce_count": 2,
+            "delay_ms": 60,
+            "max_bounce_count": 10,
             "enabled": true
         },
         "space": {
@@ -15,12 +15,12 @@
             "enabled": false
         },
         "l": {
-            "delay_ms": 600,
-            "max_bounce_count": 2,
+            "delay_ms": 60,
+            "max_bounce_count": 10,
             "enabled": true
         },
         "r": {
-            "delay_ms": 200,
+            "delay_ms": 60,
             "max_bounce_count": 2,
             "enabled": true
         }

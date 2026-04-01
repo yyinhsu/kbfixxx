@@ -20,11 +20,8 @@ void debouncer_init(Debouncer *db, Config *config, Stats *stats) {
     db->log_context = NULL;
 
     for (int i = 0; i < N_VIRTUAL_KEY; i++) {
+        db->key_states[i].last_key_up_ts = 0.0;
         db->key_states[i].last_event_type = 0;
-        db->key_states[i].dismiss_next = false;
-        db->key_states[i].bounce_counter = 0;
-        db->key_states[i].timestamp_index = 0;
-        memset(db->key_states[i].last_timestamps, 0, sizeof(db->key_states[i].last_timestamps));
     }
 }
 
@@ -74,65 +71,40 @@ CGEventRef debouncer_filter_event(Debouncer *db, CGEventRef event) {
         stats_record_event(db->stats, keycode);
     }
 
-    /* Handle pending dismiss of keyUp after suppressed keyDown */
-    if (ks->dismiss_next) {
-        if (event_type == kCGEventKeyUp) {
-            ks->dismiss_next = false;
-            emit_log(db, now, keycode, event_type, true, 0);
-            return NULL;
-        }
-    }
-
     if (event_type == kCGEventKeyDown) {
-        double last_ts = ks->last_timestamps[ks->timestamp_index];
+        double last_up_ts = ks->last_key_up_ts;
 
-        if (last_ts > 0.0 && ks->last_event_type == kCGEventKeyUp) {
-            double elapsed_ms = (now - last_ts) * 1000.0;
+        if (last_up_ts > 0.0) {
+            double elapsed_ms = (now - last_up_ts) * 1000.0;
 
-            /* NOTE: No auto-repeat guard needed here. Auto-repeat generates
-             * consecutive keyDown events WITHOUT keyUp in between, so the
-             * last_event_type == kCGEventKeyUp check above already excludes
-             * auto-repeat. Ultra-fast keyUp→keyDown pairs (< 5ms) are
-             * actually the signature of butterfly keyboard bounce. */
+            /* Auto-repeat events arrive as consecutive keyDowns with no keyUp
+             * in between, so last_key_up_ts is from the previous key cycle
+             * (a long time ago) and elapsed_ms exceeds delay_ms.
+             * Bounces produce ultra-fast keyUp→keyDown pairs (< ~10 ms). */
 
             if (elapsed_ms < (double)kc->delay_ms) {
-                /* Bounce detected */
-                ks->bounce_counter++;
-
-                if (ks->bounce_counter <= kc->max_bounce_count) {
-                    /* Suppress this bounce */
-                    ks->dismiss_next = true;
-                    if (db->stats) {
-                        stats_record_suppressed(db->stats, keycode);
-                    }
-                    emit_log(db, now, keycode, event_type, true, elapsed_ms);
-                    return NULL;
+                /* Bounce detected — unconditionally suppress this keyDown.
+                 * We intentionally do NOT suppress the corresponding keyUp;
+                 * letting keyUp events through keeps last_key_up_ts accurate
+                 * so press-bounce scenarios don't corrupt the reference time. */
+                if (db->stats) {
+                    stats_record_suppressed(db->stats, keycode);
                 }
-                /* bounce_counter > max_bounce_count: user is genuinely pressing fast,
-                 * let it through */
+                emit_log(db, now, keycode, event_type, true, elapsed_ms);
+                return NULL;
             }
-        }
-
-        /* Reset bounce counter when elapsed >= delay_ms (legitimate press) */
-        if (last_ts > 0.0) {
-            double elapsed_ms = (now - last_ts) * 1000.0;
-            if (elapsed_ms >= (double)kc->delay_ms) {
-                ks->bounce_counter = 0;
-            }
-        } else {
-            ks->bounce_counter = 0;
         }
     }
 
-    /* Record timestamp for this event */
-    if (event_type == kCGEventKeyDown || event_type == kCGEventKeyUp) {
-        ks->timestamp_index = (ks->timestamp_index + 1) % 4;
-        ks->last_timestamps[ks->timestamp_index] = now;
+    /* Record timestamp for key events */
+    if (event_type == kCGEventKeyUp) {
+        ks->last_key_up_ts = now;
+        ks->last_event_type = (int)event_type;
+    } else if (event_type == kCGEventKeyDown) {
         ks->last_event_type = (int)event_type;
     }
 
-    emit_log(db, now, keycode, (int)event_type, false,
-             ks->last_timestamps[ks->timestamp_index] > 0 ? 0 : 0);
+    emit_log(db, now, keycode, (int)event_type, false, 0);
     return event;
 }
 
@@ -206,10 +178,7 @@ void debouncer_set_log_callback(Debouncer *db, LogCallback callback, void *conte
 void debouncer_reload_config(Debouncer *db) {
     /* Reset all key states when config changes */
     for (int i = 0; i < N_VIRTUAL_KEY; i++) {
+        db->key_states[i].last_key_up_ts = 0.0;
         db->key_states[i].last_event_type = 0;
-        db->key_states[i].dismiss_next = false;
-        db->key_states[i].bounce_counter = 0;
-        db->key_states[i].timestamp_index = 0;
-        memset(db->key_states[i].last_timestamps, 0, sizeof(db->key_states[i].last_timestamps));
     }
 }

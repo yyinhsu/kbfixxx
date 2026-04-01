@@ -19,11 +19,8 @@ typedef void (*LogCallback)(const LogEntry *entry, void *context);
 
 /* Per-key runtime state */
 typedef struct {
-    double last_timestamps[4];   /* Circular buffer of last N timestamps */
-    int timestamp_index;
-    int last_event_type;
-    bool dismiss_next;           /* Suppress the next keyUp after suppressing keyDown */
-    int bounce_counter;          /* Consecutive bounces detected */
+    double last_key_up_ts;       /* Timestamp of last keyUp (used as debounce reference) */
+    int last_event_type;         /* Last recorded event type */
 } KeyState;
 
 /* Debouncer instance */
