@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [v0.7.0] - 2026-04-04
+
 ### Added
 - Show Accessibility and Input Monitoring permission status in status bar menu with quick links to System Preferences
 
