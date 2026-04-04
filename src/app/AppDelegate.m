@@ -4,6 +4,7 @@
 #import "LogWindowController.h"
 #include "keymap.h"
 #include <sys/stat.h>
+#include <dlfcn.h>
 
 /* FSEvents callback for config file watching */
 static void fsevents_callback(ConstFSEventStreamRef streamRef,
@@ -151,6 +152,39 @@ static void fsevents_callback(ConstFSEventStreamRef streamRef,
     [menu addItem:openConfigItem];
 
     [menu addItem:[NSMenuItem separatorItem]];
+
+    /* Permission Status */
+    BOOL accessibilityGranted = AXIsProcessTrusted();
+    NSString *accStatus = accessibilityGranted
+        ? @"✓ Accessibility: Granted"
+        : @"✗ Accessibility: Not Granted";
+    NSMenuItem *accItem = [[NSMenuItem alloc] initWithTitle:accStatus
+                                                    action:@selector(openAccessibilitySettings:)
+                                             keyEquivalent:@""];
+    accItem.target = self;
+    [menu addItem:accItem];
+
+    BOOL inputMonitoringGranted = NO;
+    if (@available(macOS 10.15, *)) {
+        /* IOHIDCheckAccess is 10.15+; load dynamically for 10.13 deployment target */
+        typedef uint32_t (*IOHIDCheckAccessFunc)(uint32_t);
+        IOHIDCheckAccessFunc checkAccess = (IOHIDCheckAccessFunc)dlsym(RTLD_DEFAULT, "IOHIDCheckAccess");
+        if (checkAccess) {
+            /* kIOHIDRequestTypeListenEvent = 1, kIOHIDAccessTypeGranted = 0 */
+            inputMonitoringGranted = (checkAccess(1) == 0);
+        }
+    } else {
+        /* Pre-10.15: use event tap status as a proxy */
+        inputMonitoringGranted = debouncer_event_tap_enabled(&_debouncer);
+    }
+    NSString *imStatus = inputMonitoringGranted
+        ? @"✓ Input Monitoring: Granted"
+        : @"✗ Input Monitoring: Not Granted";
+    NSMenuItem *imItem = [[NSMenuItem alloc] initWithTitle:imStatus
+                                                   action:@selector(openInputMonitoringSettings:)
+                                            keyEquivalent:@""];
+    imItem.target = self;
+    [menu addItem:imItem];
 
     /* Event Tap Status */
     BOOL tapOK = debouncer_event_tap_enabled(&_debouncer);
@@ -327,6 +361,18 @@ static void fsevents_callback(ConstFSEventStreamRef streamRef,
     } else {
         _eventTapFailCount = 0;
     }
+}
+
+- (void)openAccessibilitySettings:(id)sender {
+    (void)sender;
+    NSURL *url = [NSURL URLWithString:@"x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"];
+    [[NSWorkspace sharedWorkspace] openURL:url];
+}
+
+- (void)openInputMonitoringSettings:(id)sender {
+    (void)sender;
+    NSURL *url = [NSURL URLWithString:@"x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent"];
+    [[NSWorkspace sharedWorkspace] openURL:url];
 }
 
 - (void)showAccessibilityAlert {

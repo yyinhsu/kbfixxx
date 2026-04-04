@@ -172,6 +172,7 @@ Click the keyboard icon in the menu bar to access:
 - **Configure…** — Open the per-key settings window (with "Detect Key" button)
 - **Statistics** — View per-key suppression counts and auto-detected bouncing keys
 - **Event Log** — Real-time log of all keyboard events
+- **Permission Status** — Shows Accessibility and Input Monitoring grant status; click to open System Preferences
 - **Reload Config** — Manually reload the JSON config
 - **Open Config File** — Open `config.json` in your default editor
 
