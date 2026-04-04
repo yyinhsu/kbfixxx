@@ -45,6 +45,8 @@ bundle: $(APP_NAME)
 	@cp $(APP_NAME) $(BUNDLE)/Contents/MacOS/$(APP_NAME)
 	@cp resources/Info.plist $(BUNDLE)/Contents/Info.plist
 	@[ -f resources/kbfixxx.icns ] && cp resources/kbfixxx.icns $(BUNDLE)/Contents/Resources/ || true
+	@[ -f resources/StatusBarIcon.png ] && cp resources/StatusBarIcon.png $(BUNDLE)/Contents/Resources/ || true
+	@[ -f resources/StatusBarIcon@2x.png ] && cp resources/StatusBarIcon@2x.png $(BUNDLE)/Contents/Resources/ || true
 	@echo "Built $(BUNDLE)"
 
 # Install default config if not present

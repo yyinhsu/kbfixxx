@@ -82,17 +82,18 @@ static void fsevents_callback(ConstFSEventStreamRef streamRef,
 - (void)setupStatusItem {
     _statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
 
-    /* Use SF Symbol for the icon (keyboard) */
-    if (@available(macOS 11.0, *)) {
-        NSImage *image = [NSImage imageWithSystemSymbolName:@"keyboard.badge.ellipsis"
-                                  accessibilityDescription:@"kbfixxx"];
-        if (image) {
-            [image setTemplate:YES];
-            _statusItem.button.image = image;
-        } else {
-            _statusItem.button.title = @"KB";
-        }
+    NSString *iconPath = [[NSBundle mainBundle] pathForResource:@"StatusBarIcon" ofType:@"png"];
+    NSImage *image = iconPath ? [[NSImage alloc] initWithContentsOfFile:iconPath] : nil;
+
+    if (image) {
+        _statusItem.length = NSSquareStatusItemLength;
+        [image setTemplate:YES];
+        [image setSize:NSMakeSize(18.0, 18.0)];
+        _statusItem.button.imagePosition = NSImageOnly;
+        _statusItem.button.imageScaling = NSImageScaleProportionallyDown;
+        _statusItem.button.image = image;
     } else {
+        _statusItem.length = NSVariableStatusItemLength;
         _statusItem.button.title = @"KB";
     }
 
